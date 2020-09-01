@@ -1,0 +1,133 @@
+buildscript {
+    repositories {
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        maven { url 'https://maven.aliyun.com/repository/jcenter' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'http://maven.aliyun.com/nexus/content/repositories/gradle-plugin' }
+    }
+}
+
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
+dependencyManagement {
+    resolutionStrategy {
+        cacheChangingModulesFor 0, 'seconds'
+    }
+}
+
+configurations {
+    all*.exclude module: 'spring-boot-starter-logging'
+    all*.exclude module: 'logback-classic'
+    all*.exclude module: 'log4j'
+    all*.exclude module: 'slf4j-log4j12'
+}
+
+repositories {
+    maven {
+        url "http://bigdata.tclking.com/nexus/repository/maven-releases/"
+        credentials {
+            username 'admin'
+            password 'admin123'
+        }
+    }
+    mavenLocal()
+    maven {
+        url "https://maven.aliyun.com/repository/public"
+    }
+    maven {
+        url "https://maven.aliyun.com/repository/google"
+    }
+    maven {
+        url "https://maven.aliyun.com/repository/gradle-plugin"
+    }
+    maven {
+        url "https://maven.aliyun.com/repository/jcenter"
+    }
+
+    maven {
+        url "http://bigdata.tclking.com/nexus/repository/icm/"
+    }
+    mavenCentral()
+}
+
+javadoc {
+    options.charSet = 'UTF-8'
+    options.tags = ["date", "return", "throws", "auth", "Description", "Author", "Date", "Modified"]
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    archiveClassifier.set('sources')
+}
+
+task javadocJar(type: Jar) {
+    from javadoc
+    archiveClassifier.set('javadoc')
+}
+
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourcesJar
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = "${project.group}"
+            artifactId = "${project.name}"
+            version = "${project.version}"
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            pom {
+                name= "${project.name}"
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'cyb'
+                        name = 'chenyibin'
+                        email = '5017168@qq.com'
+                    }
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            url "http://bigdata.tclking.com/nexus/repository/maven-releases/"
+            credentials {
+                username 'admin'
+                password 'admin123'
+            }
+        }
+    }
+}
+
+install {
+    repositories.mavenInstaller {
+        pom.version = "${project.version}"
+        pom.groupId = "${project.group}"
+        pom.artifactId = "${project.name}"
+    }
+}
+
+[compileJava, javadoc, compileTestJava]*.options*.encoding = "UTF-8"
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+}
